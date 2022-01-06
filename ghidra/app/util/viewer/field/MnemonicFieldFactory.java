@@ -48,13 +48,10 @@ public class MnemonicFieldFactory extends FieldFactory {
 	private final static Color BAD_PROTOTYPE_COLOR = new Color(196, 0, 0);
 	private final static String SHOW_UNDERLINE_FOR_REFERENCES =
 		GhidraOptions.MNEMONIC_GROUP_TITLE + Options.DELIMITER + "Underline Fields With References";
-	private final static String FORCE_LOWERCASE = 
-		GhidraOptions.MNEMONIC_GROUP_TITLE + Options.DELIMITER + "Force lowercase";
 
 	private static final String OVERRIDE_COLOR_OPTION = "Mnemonic, Override Color";
 	private Color overrideColor;
 	private boolean underliningEnabled = true;
-	private boolean forceLowercase = false;
 
 	protected BrowserCodeUnitFormat codeUnitFormat;
 	private ChangeListener codeUnitFormatListener = e -> MnemonicFieldFactory.this.model.update();
@@ -86,10 +83,6 @@ public class MnemonicFieldFactory extends FieldFactory {
 			"Shows an underline on mnemonic " + "fields that have references.");
 		underliningEnabled = fieldOptions.getBoolean(SHOW_UNDERLINE_FOR_REFERENCES, true);
 
-		fieldOptions.registerOption(FORCE_LOWERCASE, false, hl,
-			"Forces mnemonics to lowercase, regardless of the sleigh implementation.");
-		forceLowercase = fieldOptions.getBoolean(FORCE_LOWERCASE, false);
-
 		// Create code unit format and associated options - listen for changes
 		codeUnitFormat = new BrowserCodeUnitFormat(fieldOptions, true);
 		codeUnitFormat.addChangeListener(codeUnitFormatListener);
@@ -104,17 +97,11 @@ public class MnemonicFieldFactory extends FieldFactory {
 		super.displayOptionsChanged(options, optionName, oldValue, newValue);
 	}
 
-	/**
-	 * @see ghidra.app.util.viewer.field.FieldFactory#fieldOptionsChanged(ghidra.framework.options.ToolOptions, java.lang.String, java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	public void fieldOptionsChanged(Options options, String optionName, Object oldValue,
 			Object newValue) {
 		if (optionName.equals(SHOW_UNDERLINE_FOR_REFERENCES)) {
 			underliningEnabled = ((Boolean) newValue).booleanValue();
-			model.update();
-		} else if (optionName.equals(FORCE_LOWERCASE)) {
-			forceLowercase = ((Boolean) newValue).booleanValue();
 			model.update();
 		}
 	}
@@ -140,9 +127,7 @@ public class MnemonicFieldFactory extends FieldFactory {
 
 		boolean underline = underliningEnabled && (cu.getMnemonicReferences().length > 0);
 		String mnemonic = codeUnitFormat.getMnemonicRepresentation(cu);
-		if(forceLowercase) {
-			mnemonic = mnemonic.toLowerCase();
-		}
+		mnemonic = mnemonic.toLowerCase();
 		Color c = color;
 		if (invalidInstrProto) {
 			c = BAD_PROTOTYPE_COLOR;
@@ -166,9 +151,6 @@ public class MnemonicFieldFactory extends FieldFactory {
 			width, hlProvider);
 	}
 
-	/**
-	 * @see ghidra.app.util.viewer.field.FieldFactory#getProgramLocation(int, int, ghidra.app.util.viewer.field.ListingField)
-	 */
 	@Override
 	public ProgramLocation getProgramLocation(int row, int col, ListingField bf) {
 		Object obj = bf.getProxy().getObject();
@@ -185,10 +167,7 @@ public class MnemonicFieldFactory extends FieldFactory {
 		Address referenceAddress = getReferenceAddress(cu);
 
 		String mnemonic = codeUnitFormat.getMnemonicRepresentation(cu);
-		if(forceLowercase) {
-			mnemonic = mnemonic.toLowerCase();
-		}
-
+		mnemonic = mnemonic.toLowerCase();
 		return new MnemonicFieldLocation(cu.getProgram(), cu.getMinAddress(), referenceAddress,
 			cpath, mnemonic, col);
 	}
@@ -214,9 +193,6 @@ public class MnemonicFieldFactory extends FieldFactory {
 		return null;
 	}
 
-	/**
-	 * @see ghidra.app.util.viewer.field.FieldFactory#getFieldLocation(ghidra.app.util.viewer.field.ListingField, BigInteger, int, ghidra.program.util.ProgramLocation)
-	 */
 	@Override
 	public FieldLocation getFieldLocation(ListingField bf, BigInteger index, int fieldNum,
 			ProgramLocation programLoc) {
@@ -231,9 +207,6 @@ public class MnemonicFieldFactory extends FieldFactory {
 		return new FieldLocation(index, fieldNum, 0, loc.getCharOffset());
 	}
 
-	/**
-	 * @see ghidra.app.util.viewer.field.FieldFactory#acceptsType(int, java.lang.Class)
-	 */
 	@Override
 	public boolean acceptsType(int category, Class<?> proxyObjectClass) {
 		if (!CodeUnit.class.isAssignableFrom(proxyObjectClass)) {
@@ -249,9 +222,6 @@ public class MnemonicFieldFactory extends FieldFactory {
 		return new MnemonicFieldFactory(formatModel, hsProvider, displayOptions, fieldOptions);
 	}
 
-	/**
-	 * @see ghidra.app.util.viewer.field.FieldFactory#getDefaultColor()
-	 */
 	@Override
 	public Color getDefaultColor() {
 		return OptionsGui.MNEMONIC.getDefaultColor();
